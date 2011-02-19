@@ -47,7 +47,10 @@ hr{
 .header a{
 	padding:4px;
 	float:right;
-	
+}
+.header span{
+	padding:4px;
+	float:right;	
 }
 
 h3{

@@ -4,41 +4,61 @@
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 
     <link type="text/css" rel="stylesheet" href="index.css">
-    
-<script src="http://platform.twitter.com/anywhere.js?id=Zh0f0QIxQWYQeJFAnYfNQ&amp;v=1"></script>
-<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false" ></script>
+
 <script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js'></script>
+<script type="text/javascript" src="jquery.cookie.js" ></script>    
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false" ></script>
+<script src="http://platform.twitter.com/anywhere.js?id=Zh0f0QIxQWYQeJFAnYfNQ&amp;v=1"></script>
+
+
 <script type="text/javascript">
+
+
+var map;	//the object representing the google map
+
+var markers = [];	//a list of markers to be rendered on the map
+var infoWindow;		//only one info window should be displayed at a time
+
+var authToken;
+var user;
+
 
 	$(document).ready(function()
 	{
 		if(isAuthenticated())
 		{
-				$("#userInfo").text('Loading your account...');
-			
+			initializePage();
 		}
 		else
 		{
-			if(location.hash && hash.indexOf('access_token') != -1)
+			if(location.hash && location.hash.indexOf('access_token') != -1)
 			{
-				var tokenIndex = hash.indexOf('access_token');
+				var tokenIndex = location.hash.indexOf('access_token');
 		
+				var token = location.hash.substring(tokenIndex+('access_token='.length));
+				
 				//save token to cookie
-				
-				
+				$.cookie('accessToken', token);
+				authToken = token;
+				initializePage();
 			}
 			else
 			{
-				$("#userInfo").append($(document.createElement('span'))
-						.text('Sign into Foursquare')
-						.click(function(){
-							foursquareLogin();
-						}));
+				$("#userInfo")
+				.empty()
+				.append($(document.createElement('a'))
+					.attr('href','javascript:void();')
+					.text('Sign into Foursquare')
+					.click(function(){
+						foursquareLogin();
+					})
+				);
 			}
 		
 		}
 		
 		
+		initializeMap();
 	});
 	
 /*
@@ -55,20 +75,84 @@
 */		
 	
 
-	var map;	//the object representing the google map
-
-	var markers = [];	//a list of markers to be rendered on the map
-	var infoWindow;		//only one info window should be displayed at a time
 
 function isAuthenticated()
 {
+	var token = $.cookie('accessToken');
+	if(token != null && token.length > 0)
+	{
+		authToken = token;
+		return true;
+	}
 	
 	return false;
 }
 	
 function foursquareLogin()
 {
-	document.location='https://foursquare.com/oauth2/authenticate?client_id=MEGIO23IGONXSI22GLYH2MES1WCDDM5LR5L14K0KVU1XQAFD&response_type=token&redirect_uri=http://localhost:8888/index.html';	
+	document.location='https://foursquare.com/oauth2/authenticate?'+
+			'client_id=MEGIO23IGONXSI22GLYH2MES1WCDDM5LR5L14K0KVU1XQAFD'+
+			'&response_type=token'+
+			'&redirect_uri=http://localhost:8888/index.html';
+}
+
+function initializePage()
+{
+	//set the logout and loading message
+	showLoginLoadingMessage();
+	
+	//begin loading the user object
+	loadUser();
+	
+	//begin loading badges
+	
+}
+
+function showLoginLoadingMessage()
+{
+	$("#userInfo")
+	.empty()
+	.append($(document.createElement('a'))
+		.attr('href','javascript:void();')
+		.text('Sign Out')
+	)
+	.append($(document.createElement('span'))
+		.text('Loading your account...'));
+}
+function showLoginUserLoaded(userObject)
+{
+	$("#userInfo")
+	.empty()
+	.append($(document.createElement('a'))
+		.attr('href','javascript:void();')
+		.text('Sign Out')
+	)
+	.append($(document.createElement('div'))
+			.append($(document.createElement('img'))
+				.attr('src',userObject.photo)))
+	.append($(document.createElement('span'))
+		.text(userObject.firstName+" "+userObject.lastName));
+}
+
+function loadUser()
+{
+	alert($.cookie('accessToken'));
+	
+	$.ajax({
+		url: "https://api.foursquare.com/v2/users/self",
+		data: {
+			//client_id: 'MEGIO23IGONXSI22GLYH2MES1WCDDM5LR5L14K0KVU1XQAFD',
+			auth_token: authToken
+		},
+		type: 'GET',
+		dataType: 'json',
+		success: function(data){
+			//updates the loading message to name and picture
+			showUserLoaded(data.response.user);
+			//sets the globally saved user object
+			user = data.response.user;
+		}
+	});	
 		
 }
 	
@@ -265,7 +349,11 @@ function buildTweetDiv(tweet)
     <div class="header">
 		<h1>Badge Assistant</h1>
 	    
-	    <a href="javascript:void();" id="userInfo"></a>
+	    <span id="userInfo">
+	    	
+	    	
+	    </span>
+	    
 	    <div style="clear:both;"></div>
 	</div>
 	

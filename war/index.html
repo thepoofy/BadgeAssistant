@@ -125,7 +125,7 @@ function showUserLoaded(userObject)
 function loadUser()
 {
 	$.ajax({
-		url: "https://api.foursquare.com/v2/users/self",
+		url: "https://api.foursquare.com/v2/users/542718",
 		data: {
 			client_id: 'MEGIO23IGONXSI22GLYH2MES1WCDDM5LR5L14K0KVU1XQAFD',
 			oauth_token: $.cookie('accessToken')
@@ -143,7 +143,7 @@ function loadUser()
 }
 function loadBadges(user)
 {
-	var userParam = "self"
+	var userParam = "542718"
 	if(user != null)
 	{
 		userParam = user;
@@ -158,15 +158,20 @@ function loadBadges(user)
 		dataType: 'json',
 		success: function(data){
 			//updates the loading message to name and picture
-			displayBadgesOnMap(normalizeBadgesResponse(data.response.badges));
+			displayBadgesOnMap(normalizeBadgesResponse(data.response));
 			//sets the globally saved user object
 			userBadges = data.response.user;
 		}
 	});	
 }	
 
-function normalizeBadgesResponse(badgeDefinitions)
+function normalizeBadgesResponse(response)
 {
+	allBadges=response.badges;
+	groups=response.sets.groups;
+	earned=groups[0].items;
+
+	/*
 	var badges=[];
 	
 	badges[0] = {
@@ -181,10 +186,14 @@ function normalizeBadgesResponse(badgeDefinitions)
 			lat: 40.75102830623012,
 			lng: -73.98862838745117
 		}]
-	};
+	};*/
 	
-	
-	return badges;
+	unlocked={};
+	$.each(earned, function(index, value) { 
+		unlocked[value]=allBadges[value];
+	});
+
+	return unlocked;
 }
 
 function displayBadgesOnMap(badges)
@@ -197,22 +206,31 @@ function displayBadgesOnMap(badges)
 
 	var bounds = new google.maps.LatLngBounds();
 
+	foundVenue = false;
 	
-	for(var i=0; i<badges.length; i++)
-	{
-		for( var v=0; v<badges[i].venues.length; v++)
-		{
-			makeMarker(
-				badges[i].venues[v].lat, 
-				badges[i].venues[v].lng, 
-				badges[i].name, 
-				badges[i].image,
-				buildInfoWindowContent(badges[i], badges[i].venues[v]));
+	$.each(badges, function(key,badge) {
+		checkins_value = badge.unlocks[0].checkins[0];
+		//$.each(badge.unlocks, function(unlock_index, unlock_value) {
+			//$.each(unlock_value, function(checkins_index, checkins_value) {
+			//});
+		//}); 
+		venue = checkins_value.venue;
+		image_url = badge.image.prefix + badge.image.sizes[0] + badge.image.name;
+		lat = venue.location.lat;
+		lng = venue.location.lng;
+		makeMarker(
+				venue.location.lat, 
+				venue.location.lng, 
+				badge.name, 
+				image_url,
+				buildInfoWindowContent(badge, venue));
 
-			bounds.extend(new google.maps.LatLng(badges[i].venues[v].lat, badges[i].venues[v].lng));
-		}
-	}
-	if(badges.length > 0)
+		bounds.extend(new google.maps.LatLng(lat, lng));
+			
+		foundVenue = true;
+	});
+
+	if(foundVenue)
 	{
 		map.fitBounds(bounds);
 		map.setCenter(bounds.getCenter());

@@ -1,0 +1,283 @@
+<!doctype html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+    <link type="text/css" rel="stylesheet" href="index.css">
+    
+<script src="http://platform.twitter.com/anywhere.js?id=Zh0f0QIxQWYQeJFAnYfNQ&amp;v=1"></script>
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false" ></script>
+<script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js'></script>
+<script type="text/javascript">
+
+	$(document).ready(function()
+	{
+		if(isAuthenticated())
+		{
+			$("#userInfo").text('Loading your account...');
+		}
+		else
+		{
+			if(location.hash && hash.indexOf('access_token') != -1)
+			{
+				var tokenIndex = hash.indexOf('access_token');
+		
+				
+			}
+			else
+			{
+				foursquareLogin();
+			}
+		}
+	});
+	
+/*
+	google.setOnLoadCallback();
+	google.setOnLoadCallback(function(){
+ 
+		$.ajax({
+			url: "/fsq/checkins", 
+			cache:false,
+			dataType:'json',
+			success: function(data){
+				load4sq(data);
+		}});
+*/		
+	
+
+	var map;	//the object representing the google map
+
+	var markers = [];	//a list of markers to be rendered on the map
+	var infoWindow;		//only one info window should be displayed at a time
+
+function isAuthenticated()
+{
+	
+	return false;
+}
+	
+function foursquareLogin()
+{
+	document.location='https://foursquare.com/oauth2/authenticate?client_id=MEGIO23IGONXSI22GLYH2MES1WCDDM5LR5L14K0KVU1XQAFD&response_type=token&redirect_uri=http://badgeassistant.com';	
+		
+}
+	
+function load4sq(foursquareCheckinData)
+{
+	infoWindow = new google.maps.InfoWindow({
+		content:"",
+		map:map
+	});
+
+	var bounds = new google.maps.LatLngBounds();
+
+	var checkinList = foursquareCheckinData.response.checkins.items;
+	
+	for(var i=0; i<checkinList.length; i++)
+	{
+		if(checkinList[i].venue)
+		{
+			makeMarker(
+				checkinList[i].venue.location.lat, 
+				checkinList[i].venue.location.lng, 
+				checkinList[i].venue.name, 
+				buildInfoWindowContent(checkinList[i]));
+
+			bounds.extend(new google.maps.LatLng(checkinList[i].venue.location.lat, checkinList[i].venue.location.lng));
+		}
+	}
+	if(checkinList.length > 0)
+	{
+		map.fitBounds(bounds);
+		map.setCenter(bounds.getCenter());
+	}
+}
+
+function buildInfoWindowContent(checkin)
+{
+	var content = "<div style='vertical-align:top;'>";
+	if(checkin.venue.categories && checkin.venue.categories.length >0)
+	{
+		content+= "<div style='float:right; width:45px; height:45px;'><img style='padding:5px;' src='"+checkin.venue.categories[0].icon+"' /></div>";
+	}
+	content += "<a target='_blank' href='http://foursquare.com/venue/"+checkin.venue.id+"'>"+checkin.venue.name+"</a>";
+	content +="<br />";
+	if(checkin.venue.location && checkin.venue.location.address)
+	{
+		content +=checkin.venue.location.address;
+		content +="<br />";
+
+		if(checkin.venue.location.crossStreet)
+		{
+			content +="("+checkin.venue.location.crossStreet+")";
+			content +="<br />";
+		}
+	}
+
+	
+	if(checkin.shout)
+	{
+		content += checkin.shout;
+		content +="<br />";
+	}
+	return content;
+}
+
+function makeMarker(lat, lng, title, content) 
+{
+	var marker = new google.maps.Marker({
+		map: map,
+		title:title, 
+		position: new google.maps.LatLng(lat, lng)
+	});
+	
+	markers.push(marker);
+
+	google.maps.event.addListener(marker, 'click', function() {
+		infoWindow.setPosition(marker.getPosition());
+		infoWindow.setContent(content);
+		infoWindow.open(map, this);
+	});
+}
+
+function initializeMap() 
+{
+	try
+	{
+	    var latlng = new google.maps.LatLng(40.7409173, -74.02867);
+	    var myOptions = {
+	      zoom: 12,
+	      center: latlng,
+	      mapTypeId: google.maps.MapTypeId.ROADMAP
+	    }
+	
+	    map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+	}
+	catch(e){}
+}
+
+var lastTweetId = '';
+
+function refreshTweets()
+{
+	$.ajax({
+		url: "http://search.twitter.com/search.json",
+		data: {
+			q: '@thePoofy OR from:thePoofy include:retweets',
+			result_type: 'recent',
+			rpp: 20,
+			since_id: lastTweetId
+		},
+		type: 'GET',
+		dataType: 'jsonp',
+		cache: false,
+		jsonpCallback: "renderTweets"
+	});
+	
+	//window.setTimeout(refreshTweets, 30000);
+}
+
+function renderTweets(tweets)
+{
+	lastTweetId = tweets.max_id_str;
+
+	if(tweets.results.length > 0)
+	{
+		for(var i=tweets.results.length-1; i>=0; i--)
+		{
+			if($('#tweetList').children().length == 0)
+			{
+				$('#tweetList').append(buildTweetDiv(tweets.results[i]));
+			}
+			else
+			{
+				$('#tweetList div:first').before(buildTweetDiv(tweets.results[i]));
+			}
+		}
+	}
+
+	twttr.anywhere(function(twitter) {
+		twitter.hovercards();
+	});
+}
+
+
+function buildTweetDiv(tweet)
+{
+	if(tweet == null)
+	{
+		return;
+	}
+	var wrapperDiv = $(document.createElement('div'))
+		.addClass('tweet')
+		.addClass(function(){
+			if(tweet.from_user == "thepoofy")
+			{
+				return "tweetFrom";
+			}
+			return "tweetTo";
+		});
+	
+	var fromDiv = $(document.createElement('div'))
+				.addClass("user left")
+				.append($('<span />')
+					.text('@'+tweet.from_user));
+	
+	var d = new Date(tweet.created_at);
+	var dateFormat = d.toLocaleDateString();
+	var dateDiv = $(document.createElement('div'))
+				.addClass("user right")
+				.text(dateFormat);
+	
+	var contentDiv = $(document.createElement('div'))
+				.addClass("content clear")
+				.html(tweet.text);
+	
+	$(wrapperDiv).append(fromDiv);
+	$(wrapperDiv).append(dateDiv);
+	$(wrapperDiv).append(contentDiv);
+
+	return wrapperDiv;
+}
+
+</script>
+
+</head>
+<body>
+
+    <!-- RECOMMENDED if your web app will not function without JavaScript enabled -->
+    <noscript>
+      <div style="width: 22em; position: absolute; left: 50%; margin-left: -11em; color: red; background-color: white; border: 1px solid red; padding: 4px; font-family: sans-serif">
+        Your web browser must have JavaScript enabled
+        in order for this application to display correctly.
+      </div>
+    </noscript>
+    <div class="header">
+		<h1>Badge Assistant</h1>
+	    
+	    <span id="userInfo"></span>
+	    <a target="_blank" href="#">Sign into Foursquare</a>
+	    <a style="display:none;" target="_blank" href="#">Add Checkin Assistant as Friend</a>
+		<div style="clear:both;"></div>
+	</div>
+	
+	<div id="map_canvas" ></div>
+	
+<!-- 	
+<table class="layout">
+	<tr>
+		<td style="width:750px;">
+			
+		</td>
+		<td style="width:10px;"> </td>
+		<td style="width:240px;">
+			<div id="tweetList"></div>
+		</td>
+   </tr>
+</table>
+ -->
+<div class="layout footer">
+	This site developed by <a target="_blank" href="mailto://william.vanderhoef@gmail.com">William Vanderhoef</a> for Foursquare Hack Day 2/19/2011
+</div>
+</body>
+</html>

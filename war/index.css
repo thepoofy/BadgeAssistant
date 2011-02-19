@@ -1,0 +1,144 @@
+/** Add css rules here for your application. */
+
+body
+{
+	width:1000px;
+	color:#444;
+	font-family: arial,san-serif;
+	font-size:0.9em;
+	margin:0px;
+	padding:10px;
+}
+
+h1{
+	font-size:3em;
+	font-family:Verdana;
+	margin:0px;
+	padding:10px 0px 10px 0px;
+	text-align:left;
+	display:block;
+	
+	float:left;
+}
+	
+a{
+	color:#444;
+}
+
+hr{
+	color:#444;
+	height:1px;
+	clear:both;
+	border-bottom: 0px;
+	margin:0px;
+	padding:0px;
+	min-height:1px;
+	top:0px;
+}
+
+
+.header{
+	vertical-align:top;
+	border-bottom:1px solid #444;
+	padding:0px;
+	margin:0px;
+}
+
+.header a{
+	padding:4px;
+	float:right;
+	
+}
+
+h3{
+	float: left;
+	text-align:center;
+	margin:0px;
+	padding:0px;
+	width:33%;
+	
+	font-size:26px;
+	border:1px solid red;
+}
+
+#map_canvas{
+	height:400px;
+}
+
+.layout{
+	border-spacing:0px;
+	width:100%;
+	margin-top:10px;
+	margin-bottom:10px;
+}
+
+table.layout tr{
+	vertical-align:top;
+}
+
+table.layout td{
+	width:33%;
+	padding:0px;
+}
+
+.tweet{
+	border-bottom: 1px solid; 
+}
+
+.tweetTo{
+	text-align:right;
+	background-color: #A8D3FF;
+	border-color:#0051A4;
+	color:#0051A4;
+}
+.tweetTo a{
+	color: #0051A4;
+}
+
+.tweetFrom  a{
+	color:#444;
+}
+
+.tweetFrom{
+	text-align:left;
+	background-color:#ddd;
+	border-color:#444;
+	color:#444;
+}
+
+.tweet .user{
+	padding:4px;
+	height:16px;
+	font-weight:bold;
+}
+
+.tweet .content
+{
+	text-align:left;
+	padding:4px 4px 8px 4px;
+	background-color:white;
+}
+
+.tweet .time{
+	display:none;
+	border-top:solid 1px; 
+	padding:4px;
+}
+
+.footer{
+	padding-top:10px;
+	border-top:1px solid #444;
+	clear:both;
+}
+
+.left{
+	float: left;
+}
+
+.right{
+	float: right;
+}
+
+.clear{
+	clear: both;
+}

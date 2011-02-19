@@ -27,6 +27,7 @@ var user;
 	{
 		if(isAuthenticated())
 		{
+			//alert("user is authenticated.");
 			initializePage();
 		}
 		else
@@ -61,24 +62,11 @@ var user;
 		initializeMap();
 	});
 	
-/*
-	google.setOnLoadCallback();
-	google.setOnLoadCallback(function(){
- 
-		$.ajax({
-			url: "/fsq/checkins", 
-			cache:false,
-			dataType:'json',
-			success: function(data){
-				load4sq(data);
-		}});
-*/		
-	
-
 
 function isAuthenticated()
 {
 	var token = $.cookie('accessToken');
+	//alert('token: '+token);
 	if(token != null && token.length > 0)
 	{
 		authToken = token;
@@ -105,7 +93,7 @@ function initializePage()
 	loadUser();
 	
 	//begin loading badges
-	
+	loadBadges();
 }
 
 function showLoginLoadingMessage()
@@ -119,7 +107,7 @@ function showLoginLoadingMessage()
 	.append($(document.createElement('span'))
 		.text('Loading your account...'));
 }
-function showLoginUserLoaded(userObject)
+function showUserLoaded(userObject)
 {
 	$("#userInfo")
 	.empty()
@@ -136,13 +124,11 @@ function showLoginUserLoaded(userObject)
 
 function loadUser()
 {
-	alert($.cookie('accessToken'));
-	
 	$.ajax({
 		url: "https://api.foursquare.com/v2/users/self",
 		data: {
-			//client_id: 'MEGIO23IGONXSI22GLYH2MES1WCDDM5LR5L14K0KVU1XQAFD',
-			auth_token: authToken
+			client_id: 'MEGIO23IGONXSI22GLYH2MES1WCDDM5LR5L14K0KVU1XQAFD',
+			oauth_token: $.cookie('accessToken')
 		},
 		type: 'GET',
 		dataType: 'json',
@@ -155,7 +141,40 @@ function loadUser()
 	});	
 		
 }
+function loadBadges()
+{
+	$.ajax({
+		url: "https://api.foursquare.com/v2/users/self/badges",
+		data: {
+			client_id: 'MEGIO23IGONXSI22GLYH2MES1WCDDM5LR5L14K0KVU1XQAFD',
+			oauth_token: $.cookie('accessToken')
+		},
+		type: 'GET',
+		dataType: 'json',
+		success: function(data){
+			//updates the loading message to name and picture
+			showUserLoaded(data.response.user);
+			//sets the globally saved user object
+			user = data.response.user;
+		}
+	});	
+}	
+
+function normalizeBadgesResponse(badgeGroups)
+{
+/*
+	var badges[];
 	
+	
+	return badges;
+*/
+}
+
+function displayBadgesOnMap(badges)
+{
+	
+}
+
 function load4sq(foursquareCheckinData)
 {
 	infoWindow = new google.maps.InfoWindow({

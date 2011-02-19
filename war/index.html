@@ -44,15 +44,7 @@ var bounds;
 			}
 			else
 			{
-				$("#userInfo")
-				.empty()
-				.append($(document.createElement('a'))
-					.attr('href','javascript:void();')
-					.text('Sign into Foursquare')
-					.click(function(){
-						foursquareLogin();
-					})
-				);
+				
 			}
 		
 		}
@@ -94,8 +86,10 @@ function logout()
 	//remove all markers
 	//map.clearOverlays();
 	initializeMap();
-	//reset
-	
+	//reset user message
+	showLoginMessage();
+	user = null;
+	userBadges = null;
 }
 function foursquareLogin()
 {
@@ -117,6 +111,19 @@ function initializePage()
 	loadBadges();
 	
 	//loadFriends();
+}
+
+function showLoginMessage()
+{
+	$("#userInfo")
+	.empty()
+	.append($(document.createElement('a'))
+		.attr('href','javascript:void();')
+		.text('Sign into Foursquare')
+		.click(function(){
+			foursquareLogin();
+		})
+	);	
 }
 
 function showLoginLoadingMessage()
@@ -232,12 +239,16 @@ function loadBadges(user_id)
 				displayBadgesOnMap(onlyFriendsBadges);
 			}
 		}
-	});	
+	});
 }	
 
 function subtractBadgeSet(group1, group2)
 {
-	var group3 = {};
+	for(var i in group2){
+		if(group1[i] != null){
+			group1[i] = null;
+		}
+	}
 	
 	return group1;
 }

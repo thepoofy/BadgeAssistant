@@ -141,10 +141,15 @@ function loadUser()
 	});	
 		
 }
-function loadBadges()
+function loadBadges(user)
 {
+	var userParam = "self"
+	if(user != null)
+	{
+		userParam = user;
+	}	
 	$.ajax({
-		url: "https://api.foursquare.com/v2/users/self/badges",
+		url: "https://api.foursquare.com/v2/users/"+userParam+"/badges",
 		data: {
 			client_id: 'MEGIO23IGONXSI22GLYH2MES1WCDDM5LR5L14K0KVU1XQAFD',
 			oauth_token: $.cookie('accessToken')
@@ -153,30 +158,38 @@ function loadBadges()
 		dataType: 'json',
 		success: function(data){
 			//updates the loading message to name and picture
-			dispalyBadgesOnMap(normalizeBadgesResponse(data.response.badges));
+			displayBadgesOnMap(normalizeBadgesResponse(data.response.badges));
 			//sets the globally saved user object
 			userBadges = data.response.user;
 		}
 	});	
 }	
 
-function normalizeBadgesResponse(badgeGroups)
+function normalizeBadgesResponse(badgeDefinitions)
 {
-/*
-	var badges[];
+	var badges=[];
+	
+	badges[0] = {
+		id:'4d17e79025cda143ddd17ad6',
+		name: 'Epic Swarm',
+		description: 'Wow! 1,000 foursquare users in the same location?!? According to our math, the world should implode right about now.',
+		image: "http://foursquare.com/img/badge/57/epic_swarm.png",
+		venues:[{
+			count: 1,
+			id:'4d1759fd25cda143c24876d6',
+			name:'Snowpocalypse 2010',
+			lat: 40.75102830623012,
+			lng: -73.98862838745117
+		}]
+	};
 	
 	
 	return badges;
-*/
 }
 
 function displayBadgesOnMap(badges)
 {
 	
-}
-
-function load4sq(foursquareCheckinData)
-{
 	infoWindow = new google.maps.InfoWindow({
 		content:"",
 		map:map
@@ -184,37 +197,40 @@ function load4sq(foursquareCheckinData)
 
 	var bounds = new google.maps.LatLngBounds();
 
-	var checkinList = foursquareCheckinData.response.checkins.items;
 	
-	for(var i=0; i<checkinList.length; i++)
+	for(var i=0; i<badges.length; i++)
 	{
-		if(checkinList[i].venue)
+		for( var v=0; v<badges[i].venues.length; v++)
 		{
 			makeMarker(
-				checkinList[i].venue.location.lat, 
-				checkinList[i].venue.location.lng, 
-				checkinList[i].venue.name, 
-				buildInfoWindowContent(checkinList[i]));
+				badges[i].venues[v].lat, 
+				badges[i].venues[v].lng, 
+				badges[i].name, 
+				badges[i].image,
+				buildInfoWindowContent(badges[i], badges[i].venues[v]));
 
-			bounds.extend(new google.maps.LatLng(checkinList[i].venue.location.lat, checkinList[i].venue.location.lng));
+			bounds.extend(new google.maps.LatLng(badges[i].venues[v].lat, badges[i].venues[v].lng));
 		}
 	}
-	if(checkinList.length > 0)
+	if(badges.length > 0)
 	{
 		map.fitBounds(bounds);
 		map.setCenter(bounds.getCenter());
 	}
 }
 
-function buildInfoWindowContent(checkin)
+function buildInfoWindowContent(badge, venue)
 {
 	var content = "<div style='vertical-align:top;'>";
+/*	
 	if(checkin.venue.categories && checkin.venue.categories.length >0)
 	{
 		content+= "<div style='float:right; width:45px; height:45px;'><img style='padding:5px;' src='"+checkin.venue.categories[0].icon+"' /></div>";
 	}
-	content += "<a target='_blank' href='http://foursquare.com/venue/"+checkin.venue.id+"'>"+checkin.venue.name+"</a>";
+*/
+	content += "<a target='_blank' href='http://foursquare.com/venue/"+venue.id+"'>"+venue.name+"</a>";
 	content +="<br />";
+/*	
 	if(checkin.venue.location && checkin.venue.location.address)
 	{
 		content +=checkin.venue.location.address;
@@ -233,16 +249,31 @@ function buildInfoWindowContent(checkin)
 		content += checkin.shout;
 		content +="<br />";
 	}
+*/
 	return content;
 }
 
-function makeMarker(lat, lng, title, content) 
+function makeMarker(lat, lng, title, image, content) 
 {
 	var marker = new google.maps.Marker({
 		map: map,
 		title:title, 
+		icon: image,
 		position: new google.maps.LatLng(lat, lng)
 	});
+	
+	/*
+	    var marker = new google.maps.Marker({
+        position: myLatLng,
+        map: map,
+        shadow: shadow,
+        icon: image,
+        shape: shape,
+        title: beach[0],
+        zIndex: beach[3]
+    });
+
+	*/
 	
 	markers.push(marker);
 

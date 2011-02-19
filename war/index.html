@@ -158,15 +158,19 @@ function loadBadges(user)
 		dataType: 'json',
 		success: function(data){
 			//updates the loading message to name and picture
-			displayBadgesOnMap(normalizeBadgesResponse(data.response.badges));
+			displayBadgesOnMap(normalizeBadgesResponse(data.response));
 			//sets the globally saved user object
 			userBadges = data.response.user;
 		}
 	});	
 }	
 
-function normalizeBadgesResponse(badgeDefinitions)
+function normalizeBadgesResponse(response)
 {
+	allBadges=response.badges;
+	groups=response.sets.groups;
+	earned=groups[0].items;
+
 	/*
 	var badges=[];
 	
@@ -182,22 +186,15 @@ function normalizeBadgesResponse(badgeDefinitions)
 			lat: 40.75102830623012,
 			lng: -73.98862838745117
 		}]
-	};
-	*/
+	};*/
 	
-	return {};
-}
+	unlocked={};
+	$.each(earned, function(index, value) { 
+		unlocked[value]=allBadges[value];
+	});
 
-//returns a brand new group of badges with the unlocks lists of the each badge merged
-function combineBadgeSets(group1, group2){
-	
+	return unlocked;
 }
-
-//remove all badges in group2 from group1
-function removeBadgeSet(group1, group2){
-	
-}
-
 
 function displayBadgesOnMap(badges)
 {
@@ -209,22 +206,31 @@ function displayBadgesOnMap(badges)
 
 	var bounds = new google.maps.LatLngBounds();
 
+	foundVenue = false;
 	
-	for(var i=0; i<badges.length; i++)
-	{
-		for( var v=0; v<badges[i].venues.length; v++)
-		{
-			makeMarker(
-				badges[i].venues[v].lat, 
-				badges[i].venues[v].lng, 
-				badges[i].name, 
-				badges[i].image,
-				buildInfoWindowContent(badges[i], badges[i].venues[v]));
+	$.each(badges, function(key,badge) {
+		checkins_value = badge.unlocks[0].checkins[0];
+		//$.each(badge.unlocks, function(unlock_index, unlock_value) {
+			//$.each(unlock_value, function(checkins_index, checkins_value) {
+			//});
+		//}); 
+		venue = checkins_value.venue;
+		image_url = badge.image.prefix + badge.image.sizes[0] + badge.image.name;
+		lat = venue.location.lat;
+		lng = venue.location.lng;
+		makeMarker(
+				venue.location.lat, 
+				venue.location.lng, 
+				badge.name, 
+				image_url,
+				buildInfoWindowContent(badge, venue));
 
-			bounds.extend(new google.maps.LatLng(badges[i].venues[v].lat, badges[i].venues[v].lng));
-		}
-	}
-	if(badges.length > 0)
+		bounds.extend(new google.maps.LatLng(lat, lng));
+			
+		foundVenue = true;
+	});
+
+	if(foundVenue)
 	{
 		map.fitBounds(bounds);
 		map.setCenter(bounds.getCenter());
@@ -273,7 +279,7 @@ function buildInfoWindowContent(badge, venue)
 		content += '<br />';
 	}
 
-	content+="<a href='javascript:addTodo("+venue.id+");'>Add as TODO</a><br />";
+	content+="<a id='"+venue.id+'-'+badge.id+"' href='javascript:addTodo(\""+venue.id+"\",\""+badge.name+"\",\""+badge.id+"\");'>Add as TODO</a><br />";
 	
 	return content;
 }
@@ -327,6 +333,25 @@ function initializeMap()
 	    map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
 	}
 	catch(e){}
+}
+
+function addTodo(venueId, badgeName, badgeId)
+{
+	$.ajax({
+		url: "https://api.foursquare.com/v2/venues/"+venueId+"/marktodo",
+		data: {
+			client_id: 'MEGIO23IGONXSI22GLYH2MES1WCDDM5LR5L14K0KVU1XQAFD',
+			oauth_token: $.cookie('accessToken'),
+			text:'BadgeAssistant.com said I might be able to get the '+badgeName+' badge here.'
+		},
+		type: 'POST',
+		dataType: 'json',
+		success: function(data){
+			
+			//TODO use jquery to remove the addTodo text
+			$("#"+venueId+"-"+badgeId).hide();
+		}
+	});
 }
 
 var lastTweetId = '';

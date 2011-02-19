@@ -9,8 +9,6 @@
 <script type="text/javascript" src="jquery.cookie.js" ></script>    
 <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false" ></script>
 <script src="http://platform.twitter.com/anywhere.js?id=Zh0f0QIxQWYQeJFAnYfNQ&amp;v=1"></script>
-
-
 <script type="text/javascript">
 
 
@@ -76,7 +74,16 @@ function isAuthenticated()
 	
 	return false;
 }
+function logout()
+{
+	//forget what the oauth_token is
+	$.cookie('accessToken',null);
+	//remove all markers
+	//map.clearOverlays();
+	initializeMap();
+	//reset
 	
+}
 function foursquareLogin()
 {
 	document.location='https://foursquare.com/oauth2/authenticate?'+
@@ -102,8 +109,11 @@ function showLoginLoadingMessage()
 	$("#userInfo")
 	.empty()
 	.append($(document.createElement('a'))
-		.attr('href','javascript:void();')
+		.attr('href','javascript:;')
 		.text('Sign Out')
+		.click(function(){
+			logout();
+		})
 	)
 	.append($(document.createElement('span'))
 		.text('Loading your account...'));
@@ -113,13 +123,18 @@ function showUserLoaded(userObject)
 	$("#userInfo")
 	.empty()
 	.append($(document.createElement('a'))
-		.attr('href','javascript:void();')
+		.attr('href','javascript:;')
 		.text('Sign Out')
+		.click(function(){
+			logout();
+		})
 	)
 	.append($(document.createElement('div'))
 			.append($(document.createElement('img'))
+				.attr('style','float:right; width:30px; height:30px;')
 				.attr('src',userObject.photo)))
 	.append($(document.createElement('span'))
+		.attr('style','float:right;')
 		.text(userObject.firstName+" "+userObject.lastName));
 }
 
@@ -166,12 +181,30 @@ function loadBadges(user)
 		dataType: 'json',
 		success: function(data){
 			//updates the loading message to name and picture
-			displayBadgesOnMap(normalizeBadgesResponse(data.response));
-			//sets the globally saved user object
-			userBadges = data.response.user;
+			
+			if(getUserId() == "self")
+			{
+				//sets the globally saved user object
+				userBadges = normalizeBadgesResponse(data.response);
+				displayBadgesOnMap(userBadges);
+			}
+			else
+			{
+				friendsBadges = normalizeBadgesResponse(data.response);
+				
+				onlyFriendsBadges = subtractBadgeSet(friendsBadges, userBadges);
+				displayBadgesOnMap(onlyFriendsBadges);
+			}
 		}
 	});	
 }	
+
+function subtractBadgeSet(group1, group2)
+{
+	var group3 = {};
+	
+	return group1;
+}
 
 function normalizeBadgesResponse(response)
 {
@@ -179,23 +212,6 @@ function normalizeBadgesResponse(response)
 	groups=response.sets.groups;
 	earned=groups[0].items;
 
-	/*
-	var badges=[];
-	
-	badges[0] = {
-		id:'4d17e79025cda143ddd17ad6',
-		name: 'Epic Swarm',
-		description: 'Wow! 1,000 foursquare users in the same location?!? According to our math, the world should implode right about now.',
-		image: "http://foursquare.com/img/badge/57/epic_swarm.png",
-		venues:[{
-			count: 1,
-			id:'4d1759fd25cda143c24876d6',
-			name:'Snowpocalypse 2010',
-			lat: 40.75102830623012,
-			lng: -73.98862838745117
-		}]
-	};*/
-	
 	unlocked={};
 	$.each(earned, function(index, value) { 
 		unlocked[value]=allBadges[value];
@@ -218,10 +234,7 @@ function displayBadgesOnMap(badges)
 	
 	$.each(badges, function(key,badge) {
 		checkins_value = badge.unlocks[0].checkins[0];
-		//$.each(badge.unlocks, function(unlock_index, unlock_value) {
-			//$.each(unlock_value, function(checkins_index, checkins_value) {
-			//});
-		//}); 
+		
 		if (checkins_value != null && checkins_value.venue != null) {
 			venue = checkins_value.venue;
 			image_url = badge.image.prefix + badge.image.sizes[0] + badge.image.name;
@@ -306,19 +319,6 @@ function makeMarker(lat, lng, title, image, content)
 		},
 		position: new google.maps.LatLng(lat, lng)
 	});
-	
-	/*
-	    var marker = new google.maps.Marker({
-        position: myLatLng,
-        map: map,
-        shadow: shadow,
-        icon: image,
-        shape: shape,
-        title: beach[0],
-        zIndex: beach[3]
-    });
-
-	*/
 	
 	markers.push(marker);
 

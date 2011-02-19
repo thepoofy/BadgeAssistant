@@ -21,7 +21,7 @@ var infoWindow;		//only one info window should be displayed at a time
 
 var authToken;
 var user;
-
+var userBadges;
 
 	$(document).ready(function()
 	{
@@ -153,9 +153,9 @@ function loadBadges()
 		dataType: 'json',
 		success: function(data){
 			//updates the loading message to name and picture
-			showUserLoaded(data.response.user);
+			dispalyBadgesOnMap(normalizeBadgesResponse(data.response.badges));
 			//sets the globally saved user object
-			user = data.response.user;
+			userBadges = data.response.user;
 		}
 	});	
 }	

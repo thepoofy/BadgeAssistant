@@ -167,6 +167,7 @@ function loadBadges(user)
 
 function normalizeBadgesResponse(badgeDefinitions)
 {
+	/*
 	var badges=[];
 	
 	badges[0] = {
@@ -182,10 +183,21 @@ function normalizeBadgesResponse(badgeDefinitions)
 			lng: -73.98862838745117
 		}]
 	};
+	*/
 	
-	
-	return badges;
+	return {};
 }
+
+//returns a brand new group of badges with the unlocks lists of the each badge merged
+function combineBadgeSets(group1, group2){
+	
+}
+
+//remove all badges in group2 from group1
+function removeBadgeSet(group1, group2){
+	
+}
+
 
 function displayBadgesOnMap(badges)
 {
@@ -222,34 +234,47 @@ function displayBadgesOnMap(badges)
 function buildInfoWindowContent(badge, venue)
 {
 	var content = "<div style='vertical-align:top;'>";
-/*	
-	if(checkin.venue.categories && checkin.venue.categories.length >0)
+
+	
+	if(venue.categories && venue.categories.length >0)
 	{
-		content+= "<div style='float:right; width:45px; height:45px;'><img style='padding:5px;' src='"+checkin.venue.categories[0].icon+"' /></div>";
+		content+= "<div style='float:right; width:45px; height:45px;'><img style='padding:5px;' src='"+venue.categories[0].icon+"' /></div>";
 	}
-*/
+
 	content += "<a target='_blank' href='http://foursquare.com/venue/"+venue.id+"'>"+venue.name+"</a>";
 	content +="<br />";
-/*	
-	if(checkin.venue.location && checkin.venue.location.address)
+
+	if(venue.location && venue.location.address)
 	{
-		content +=checkin.venue.location.address;
+		content +=venue.location.address;
 		content +="<br />";
 
-		if(checkin.venue.location.crossStreet)
+		if(venue.location.crossStreet)
 		{
-			content +="("+checkin.venue.location.crossStreet+")";
+			content +="("+venue.location.crossStreet+")";
 			content +="<br />";
 		}
 	}
-
 	
-	if(checkin.shout)
+	if(venue.location.city)
 	{
-		content += checkin.shout;
-		content +="<br />";
+		content +=venue.location.city;
 	}
-*/
+	if(venue.location.city && venue.location.state)
+	{
+		content += ', ';
+	}	
+	if(venue.location.state)
+	{
+		content +=venue.location.state;
+	}
+	if(venue.location.city || venue.location.state)
+	{
+		content += '<br />';
+	}
+
+	content+="<a href='javascript:addTodo("+venue.id+");'>Add as TODO</a><br />";
+	
 	return content;
 }
 
@@ -259,6 +284,10 @@ function makeMarker(lat, lng, title, image, content)
 		map: map,
 		title:title, 
 		icon: image,
+		shape:{
+			coords:[28,28,28],
+			type: 'circle'
+		},
 		position: new google.maps.LatLng(lat, lng)
 	});
 	
@@ -407,7 +436,7 @@ function buildTweetDiv(tweet)
 	    <div style="clear:both;"></div>
 	</div>
 	
-	<div id="map_canvas" ></div>
+	<div id="map_canvas"></div>
 	
 <!-- 	
 <table class="layout">

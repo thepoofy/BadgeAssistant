@@ -20,7 +20,7 @@ var infoWindow;		//only one info window should be displayed at a time
 var authToken;
 var user;
 var userBadges;
-
+var bounds;
 
 	$(document).ready(function()
 	{
@@ -62,6 +62,19 @@ var userBadges;
 	});
 	
 
+function getUserId() {
+	var user_id = 'self';
+	
+	if(location.hash && location.hash.indexOf('user_id') != -1)
+	{
+		var userIdIndex = location.hash.indexOf('user_id');		
+		user_id = location.hash.substring(userIdIndex+('user_id='.length));
+	}
+	
+	return user_id;
+}
+
+
 function isAuthenticated()
 {
 	var token = $.cookie('accessToken');
@@ -102,6 +115,8 @@ function initializePage()
 	
 	//begin loading badges
 	loadBadges();
+	
+	//loadFriends();
 }
 
 function showLoginLoadingMessage()
@@ -138,18 +153,6 @@ function showUserLoaded(userObject)
 		.text(userObject.firstName+" "+userObject.lastName));
 }
 
-function getUserId() {
-	var user_id = 'self';
-	
-	if(location.hash && location.hash.indexOf('user_id') != -1)
-	{
-		var userIdIndex = location.hash.indexOf('user_id');		
-		user_id = location.hash.substring(userIdIndex+('user_id='.length));
-	}
-	
-	return user_id;
-}
-
 function loadUser()
 {
 	$.ajax({
@@ -167,12 +170,45 @@ function loadUser()
 			user = data.response.user;
 		}
 	});	
-		
 }
-function loadBadges(user)
-{	
+
+function loadFriends()
+{
 	$.ajax({
-		url: "https://api.foursquare.com/v2/users/"+getUserId()+"/badges",
+		url: "https://api.foursquare.com/v2/users/" + getUserId() + "/friends",
+		data: {
+			client_id: 'MEGIO23IGONXSI22GLYH2MES1WCDDM5LR5L14K0KVU1XQAFD',
+			oauth_token: $.cookie('accessToken')
+		},
+		type: 'GET',
+		dataType: 'json',
+		success: function(data){
+			response = data.response;
+
+			$.each(response.friends.items, function(index, friend){
+					loadBadges(friend.id);
+			});
+		}
+	});	
+
+}
+
+function clearFriends() 
+{
+	initializeMap();
+	
+	loadBadges();
+	
+}
+
+function loadBadges(user_id)
+{	
+	if(user_id == null) {
+		user_id = getUserId();
+	}
+	
+	$.ajax({
+		url: "https://api.foursquare.com/v2/users/"+user_id+"/badges",
 		data: {
 			client_id: 'MEGIO23IGONXSI22GLYH2MES1WCDDM5LR5L14K0KVU1XQAFD',
 			oauth_token: $.cookie('accessToken')
@@ -228,7 +264,9 @@ function displayBadgesOnMap(badges)
 		map:map
 	});
 
-	var bounds = new google.maps.LatLngBounds();
+	if(bounds == null) {
+		bounds = new google.maps.LatLngBounds();
+	}
 
 	foundVenue = false;
 	
@@ -269,7 +307,7 @@ function buildInfoWindowContent(badge, venue)
 	{
 		content+= "<div style='float:right; width:45px; height:45px;'><img style='padding:5px;' src='"+venue.categories[0].icon+"' /></div>";
 	}
-
+	content += "<b>" + badge.name + "</b><br />" + badge.description + "<br /><br />";
 	content += "<a target='_blank' href='http://foursquare.com/venue/"+venue.id+"'>"+venue.name+"</a>";
 	content +="<br />";
 
@@ -343,6 +381,8 @@ function initializeMap()
 	    map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
 	}
 	catch(e){}
+	
+	bounds = null;
 }
 
 function addTodo(venueId, badgeName, badgeId)
@@ -462,7 +502,10 @@ function buildTweetDiv(tweet)
     </noscript>
     <div class="header">
 		<h1>Badge Assistant</h1>
-	    
+<!-- 	    Friend Id: <input class="friend_id" SIZE=4><input type=button onclick="javascript:loadBadges($('input').val());" VALUE="Map Friends' Badge"> 
+ -->
+	    <input type=button onclick="javascript:loadFriends();" VALUE="Show Friends">
+	    <input type=button onclick="javascript:clearFriends();" VALUE="Hide Friends">
 	    <span id="userInfo">
 	    	
 	    	

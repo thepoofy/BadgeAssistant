@@ -14,7 +14,8 @@
 	{
 		if(isAuthenticated())
 		{
-			$("#userInfo").text('Loading your account...');
+				$("#userInfo").text('Loading your account...');
+			
 		}
 		else
 		{
@@ -22,13 +23,22 @@
 			{
 				var tokenIndex = hash.indexOf('access_token');
 		
+				//save token to cookie
+				
 				
 			}
 			else
 			{
-				foursquareLogin();
+				$("#userInfo").append($(document.createElement('span'))
+						.text('Sign into Foursquare')
+						.click(function(){
+							foursquareLogin();
+						}));
 			}
+		
 		}
+		
+		
 	});
 	
 /*
@@ -58,7 +68,7 @@ function isAuthenticated()
 	
 function foursquareLogin()
 {
-	document.location='https://foursquare.com/oauth2/authenticate?client_id=MEGIO23IGONXSI22GLYH2MES1WCDDM5LR5L14K0KVU1XQAFD&response_type=token&redirect_uri=http://badgeassistant.com';	
+	document.location='https://foursquare.com/oauth2/authenticate?client_id=MEGIO23IGONXSI22GLYH2MES1WCDDM5LR5L14K0KVU1XQAFD&response_type=token&redirect_uri=http://localhost:8888/index.html';	
 		
 }
 	
@@ -255,10 +265,8 @@ function buildTweetDiv(tweet)
     <div class="header">
 		<h1>Badge Assistant</h1>
 	    
-	    <span id="userInfo"></span>
-	    <a target="_blank" href="#">Sign into Foursquare</a>
-	    <a style="display:none;" target="_blank" href="#">Add Checkin Assistant as Friend</a>
-		<div style="clear:both;"></div>
+	    <a href="javascript:void();" id="userInfo"></a>
+	    <div style="clear:both;"></div>
 	</div>
 	
 	<div id="map_canvas" ></div>
@@ -277,7 +285,7 @@ function buildTweetDiv(tweet)
 </table>
  -->
 <div class="layout footer">
-	This site developed by <a target="_blank" href="mailto://william.vanderhoef@gmail.com">William Vanderhoef</a> for Foursquare Hack Day 2/19/2011
+	This site developed by <a target="_blank" href="mailto://william.vanderhoef@gmail.com">William Vanderhoef</a> and <a href="mailto://masondu@gmail.com">Mason Du</a> for Foursquare Hack Day 2/19/2011
 </div>
 </body>
 </html>

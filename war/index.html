@@ -8,7 +8,6 @@
 <script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js'></script>
 <script type="text/javascript" src="jquery.cookie.js" ></script>    
 <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false" ></script>
-<script src="http://platform.twitter.com/anywhere.js?id=Zh0f0QIxQWYQeJFAnYfNQ&amp;v=1"></script>
 <script type="text/javascript">
 
 
@@ -24,6 +23,7 @@ var bounds;
 
 	$(document).ready(function()
 	{
+		
 		if(isAuthenticated())
 		{
 			//alert("user is authenticated.");
@@ -88,6 +88,7 @@ function logout()
 	initializeMap();
 	//reset user message
 	showLoginMessage();
+	hideMenu();
 	user = null;
 	userBadges = null;
 }
@@ -110,7 +111,10 @@ function initializePage()
 	//begin loading badges
 	loadBadges();
 	
+	setupMenu();
+	
 	//loadFriends();
+	
 }
 
 function showLoginMessage()
@@ -415,88 +419,15 @@ function addTodo(venueId, badgeName, badgeId)
 	});
 }
 
-var lastTweetId = '';
 
-function refreshTweets()
-{
-	$.ajax({
-		url: "http://search.twitter.com/search.json",
-		data: {
-			q: '@thePoofy OR from:thePoofy include:retweets',
-			result_type: 'recent',
-			rpp: 20,
-			since_id: lastTweetId
-		},
-		type: 'GET',
-		dataType: 'jsonp',
-		cache: false,
-		jsonpCallback: "renderTweets"
-	});
+function setupMenu(){
+	$(".menuItem").show();
+	$("#myBadges").addClass("selected");
 	
-	//window.setTimeout(refreshTweets, 30000);
 }
-
-function renderTweets(tweets)
-{
-	lastTweetId = tweets.max_id_str;
-
-	if(tweets.results.length > 0)
-	{
-		for(var i=tweets.results.length-1; i>=0; i--)
-		{
-			if($('#tweetList').children().length == 0)
-			{
-				$('#tweetList').append(buildTweetDiv(tweets.results[i]));
-			}
-			else
-			{
-				$('#tweetList div:first').before(buildTweetDiv(tweets.results[i]));
-			}
-		}
-	}
-
-	twttr.anywhere(function(twitter) {
-		twitter.hovercards();
-	});
-}
-
-
-function buildTweetDiv(tweet)
-{
-	if(tweet == null)
-	{
-		return;
-	}
-	var wrapperDiv = $(document.createElement('div'))
-		.addClass('tweet')
-		.addClass(function(){
-			if(tweet.from_user == "thepoofy")
-			{
-				return "tweetFrom";
-			}
-			return "tweetTo";
-		});
-	
-	var fromDiv = $(document.createElement('div'))
-				.addClass("user left")
-				.append($('<span />')
-					.text('@'+tweet.from_user));
-	
-	var d = new Date(tweet.created_at);
-	var dateFormat = d.toLocaleDateString();
-	var dateDiv = $(document.createElement('div'))
-				.addClass("user right")
-				.text(dateFormat);
-	
-	var contentDiv = $(document.createElement('div'))
-				.addClass("content clear")
-				.html(tweet.text);
-	
-	$(wrapperDiv).append(fromDiv);
-	$(wrapperDiv).append(dateDiv);
-	$(wrapperDiv).append(contentDiv);
-
-	return wrapperDiv;
+function hideMenu(){
+	$(".menu").hide();
+	$(".selected").removeClass("selected");
 }
 
 </script>
@@ -511,35 +442,21 @@ function buildTweetDiv(tweet)
         in order for this application to display correctly.
       </div>
     </noscript>
-    <div class="header">
+    <div class="header"">
 		<h1>Badge Assistant</h1>
-<!-- 	    Friend Id: <input class="friend_id" SIZE=4><input type=button onclick="javascript:loadBadges($('input').val());" VALUE="Map Friends' Badge"> 
- -->
-	    <input type=button onclick="javascript:loadFriends();" VALUE="Show Friends">
-	    <input type=button onclick="javascript:clearFriends();" VALUE="Hide Friends">
-	    <span id="userInfo">
-	    	
-	    	
-	    </span>
-	    
-	    <div style="clear:both;"></div>
+		<div id="userInfo"></div>
+		
+		<div style="border:0px; clear:both;"></div>
+	</div>
+	<div class="menu">	
+		<div id="myBadges" class="menuItem selected" onclick="javascript:clearFriends();">Show My Badges</div>
+		<div id="friendsBadges" class="menuItem" onclick="javascript:loadFriends();">Show Badges I don't have!</div>
+		
+		<div style="border:0px; clear:both;"></div>
 	</div>
 	
 	<div id="map_canvas"></div>
 	
-<!-- 	
-<table class="layout">
-	<tr>
-		<td style="width:750px;">
-			
-		</td>
-		<td style="width:10px;"> </td>
-		<td style="width:240px;">
-			<div id="tweetList"></div>
-		</td>
-   </tr>
-</table>
- -->
 <div class="layout footer">
 	This site developed by <a target="_blank" href="mailto://william.vanderhoef@gmail.com">William Vanderhoef</a> and <a href="mailto://masondu@gmail.com">Mason Du</a> for Foursquare Hack Day 2/19/2011
 </div>

@@ -39,7 +39,7 @@ hr{
 
 .header{
 	vertical-align:top;
-	border-bottom:1px solid #444;
+	
 	padding:0px;
 	margin:0px;
 }
@@ -47,10 +47,32 @@ hr{
 .header a{
 	padding:4px;
 	float:right;
+	
 }
 .header span{
 	padding:4px;
 	float:right;	
+}
+
+.menu{
+	border-bottom:1px solid #444;
+	padding:4px 4px 0px 4px;
+}
+
+div .menuItem{
+	padding:4px;
+	margin-right:6px;
+	border-top: 1px solid #444;
+	border-left: 1px solid #444;
+	border-right: 1px solid #444;
+	background-color: #999;
+	color:#000;	
+	float:left;
+}
+div .menuItem .selected{
+	background-color: #ddd;
+	color:#000;
+	float:left;
 }
 
 h3{

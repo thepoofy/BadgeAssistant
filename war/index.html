@@ -44,7 +44,7 @@ var bounds;
 			}
 			else
 			{
-				
+				showLoginMessage();
 			}
 		
 		}
@@ -97,7 +97,7 @@ function foursquareLogin()
 	document.location='https://foursquare.com/oauth2/authenticate?'+
 			'client_id=MEGIO23IGONXSI22GLYH2MES1WCDDM5LR5L14K0KVU1XQAFD'+
 			'&response_type=token'+
-			'&redirect_uri=http://badgeassistant.com/index.html';
+			'&redirect_uri=http://localhost:8888/index.html';
 }
 
 function initializePage()
@@ -127,7 +127,8 @@ function showLoginMessage()
 		.click(function(){
 			foursquareLogin();
 		})
-	);	
+	);
+	hideMenu();
 }
 
 function showLoginLoadingMessage()
@@ -146,6 +147,7 @@ function showLoginLoadingMessage()
 }
 function showUserLoaded(userObject)
 {
+	
 	$("#userInfo")
 	.empty()
 	.append($(document.createElement('a'))
@@ -161,7 +163,7 @@ function showUserLoaded(userObject)
 				.attr('src',userObject.photo)))
 	.append($(document.createElement('span'))
 		.attr('style','float:right;')
-		.text(userObject.firstName+" "+userObject.lastName));
+		.text(userObject.firstName));
 }
 
 function loadUser()

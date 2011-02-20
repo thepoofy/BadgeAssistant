@@ -386,7 +386,7 @@ function buildInfoWindowContent(badge, venue, user_obj)
 	if(user_obj != null){
 		content +="<p>";
 		content += "<img style='float:right;width:60px;height:60px;' src='"+user_obj.photo+"' />";
-		content += "Unlocked by: " + user_obj.firstName + " " + user_obj.lastName;
+		content += "Unlocked by: " + user_obj.firstName;
 		content +="</p>";
 	}
 
@@ -481,7 +481,7 @@ function hideMenu(){
         in order for this application to display correctly.
       </div>
     </noscript>
-    <div class="header"">
+    <div class="header""> 
 		<h1>Badge Assistant</h1>
 		<div id="userInfo"></div>
 		

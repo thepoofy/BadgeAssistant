@@ -375,7 +375,7 @@ function buildInfoWindowContent(badge, venue)
 		content += '<br />';
 	}
 
-	content+="<a id='"+venue.id+'-'+badge.id+"' href='javascript:addTodo(\""+venue.id+"\",\""+badge.name+"\",\""+badge.id+"\");'>Add as TODO</a><br />";
+	//content+="<a id='"+venue.id+'-'+badge.id+"' href='javascript:addTodo(\""+venue.id+"\",\""+escape(badge.name)+"\",\""+badge.id+"\");'>Add as TODO</a><br />";
 	
 	return content;
 }
@@ -419,15 +419,19 @@ function initializeMap()
 	
 	bounds = null;
 }
-
+/*
 function addTodo(venueId, badgeName, badgeId)
 {
+	alert(venueId);
+	alert(badgeName);
+	alert(badgeId);
+	
 	$.ajax({
 		url: "https://api.foursquare.com/v2/venues/"+venueId+"/marktodo",
 		data: {
 			client_id: 'MEGIO23IGONXSI22GLYH2MES1WCDDM5LR5L14K0KVU1XQAFD',
 			oauth_token: $.cookie('accessToken'),
-			text:'BadgeAssistant.com said I might be able to get the '+badgeName+' badge here.'
+			text:'BadgeAssistant.com said I might be able to get the '+unescape(badgeName)+' badge here.'
 		},
 		type: 'POST',
 		dataType: 'json',
@@ -438,16 +442,16 @@ function addTodo(venueId, badgeName, badgeId)
 		}
 	});
 }
-
+*/
 
 function setupMenu(){
 	$(".menuItem").show();
-	$("#myBadges").addClass("selected");
+	$("#myBadges").addClass("selectedMenu");
 	
 }
 function hideMenu(){
 	$(".menu").hide();
-	$(".selected").removeClass("selected");
+	$(".selectedMenu").removeClass("selectedMenu");
 }
 
 </script>
@@ -469,8 +473,8 @@ function hideMenu(){
 		<div style="border:0px; clear:both;"></div>
 	</div>
 	<div class="menu">	
-		<div id="myBadges" class="menuItem selected" onclick="javascript:clearFriends();">Show My Badges</div>
-		<div id="friendsBadges" class="menuItem" onclick="javascript:loadFriends();">Show Badges I don't have!</div>
+		<a href="javascript:;"><div id="myBadges" class="menuItem selectedMenu" onclick="javascript:clearFriends();">Show My Badges</div></a>
+		<a href="javascript:;"><div id="friendsBadges" class="menuItem" onclick="javascript:loadFriends();">Show Badges I don't have!</div></a>
 		
 		<div style="border:0px; clear:both;"></div>
 	</div>
